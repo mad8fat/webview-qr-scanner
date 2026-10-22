@@ -1,0 +1,37 @@
+{
+  "name": "webview-qr-scanner",
+  "version": "0.1.0",
+  "description": "Camera QR/barcode scanner that works inside Telegram WebView and iOS Safari. ZBar WASM, zero dependencies.",
+  "keywords": [
+    "camera",
+    "qr",
+    "qr-code",
+    "barcode",
+    "scanner",
+    "zbar",
+    "wasm",
+    "webassembly",
+    "telegram",
+    "webview",
+    "mini-app",
+    "es5"
+  ],
+  "homepage": "https://mad8fat.github.io/webview-qr-scanner/demo/",
+  "bugs": {
+    "url": "https://github.com/mad8fat/webview-qr-scanner/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mad8fat/webview-qr-scanner.git"
+  },
+  "author": "mad8fat",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/check-wasm.js && node scripts/check-clean.js && node scripts/check-readme.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

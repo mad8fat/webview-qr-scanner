@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0B0F14">
+<meta name="description" content="Live demo of webview-qr-scanner: a camera QR and barcode scanner that works inside Telegram WebView and iOS Safari.">
+<title>webview-qr-scanner demo</title>
+<link rel="stylesheet" href="demo.css?v=0.1.0">
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 7v6"/><path d="M12 16.5v.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-torch" viewBox="0 0 24 24"><path d="M7 3h10v3l-3 4v11h-4V10L7 6z"/><path d="M7 6h10"/><path d="M12 13.5v2"/></symbol>
+  <symbol id="i-torch-off" viewBox="0 0 24 24"><path d="M7 3h10v3l-3 4v11h-4V10L7 6z"/><path d="M7 6h10"/><path d="M3 3l18 18"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 6v12" stroke-width="2.6"/><path d="M15 6v12" stroke-width="2.6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></symbol>
+  <symbol id="i-barcode" viewBox="0 0 24 24"><path d="M4 5v14M6.5 5v14M9.5 5v14M12 5v14M15 5v14M17.5 5v14M20 5v14" stroke-width="1.6"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M5 10h14M5 14h14M5 18h8"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M9 11V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10.5V9a1.5 1.5 0 0 1 3 0v2"/><path d="M15 11a1.5 1.5 0 0 1 3 0v3.5a6.5 6.5 0 0 1-6.5 6.5h-.6a6 6 0 0 1-4.7-2.3l-2.6-3.3a1.5 1.5 0 0 1 2.3-1.9L9 15"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></symbol>
+</svg>
+
+<main class="app" id="app" data-state="idle">
+  <h1 class="visually-hidden">webview-qr-scanner demo</h1>
+
+  <section class="scanner" aria-label="Scanner">
+    <div class="stage" id="stage">
+      <div class="status-row">
+        <p class="status" id="status" role="status" aria-live="polite" data-tone="busy">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">Loading decoder&hellip;</span>
+        </p>
+      </div>
+
+      <div class="viewfinder" id="viewfinder">
+        <video id="video" playsinline muted autoplay></video>
+
+        <div class="frame" aria-hidden="true">
+          <span class="corner corner-tl"></span>
+          <span class="corner corner-tr"></span>
+          <span class="corner corner-bl"></span>
+          <span class="corner corner-br"></span>
+          <span class="scanline"></span>
+        </div>
+
+        <div class="overlay overlay-loading" id="loading">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="loading-text" id="loadingText">Loading decoder&hellip;</p>
+          <span class="progress" aria-hidden="true"><span class="progress-bar" id="progressBar"></span></span>
+        </div>
+
+        <div class="overlay overlay-error" id="errorPanel" hidden>
+          <svg class="icon icon-xl" id="errorIcon" aria-hidden="true"><use href="#i-alert" xlink:href="#i-alert"></use></svg>
+          <h2 class="panel-title" id="errorTitle">Camera unavailable</h2>
+          <p class="panel-text" id="errorText">Please check permissions or another app using the camera.</p>
+          <p class="panel-detail" id="errorDetail"></p>
+          <button class="btn btn-primary" id="btnRetry" type="button">Try again</button>
+        </div>
+
+        <button class="overlay overlay-tap" id="tapToResume" type="button" hidden>
+          <span class="tap-card">
+            <svg class="icon icon-lg" aria-hidden="true"><use href="#i-hand" xlink:href="#i-hand"></use></svg>
+            <span>Tap to start camera</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="dialog" id="dialog" role="dialog" aria-modal="false" aria-labelledby="dialogTitle" data-kind="" hidden>
+        <div class="dialog-head">
+          <span class="dialog-icon"><svg class="icon" id="dialogIcon" aria-hidden="true"><use href="#i-check-circle" xlink:href="#i-check-circle"></use></svg></span>
+          <h2 class="dialog-title" id="dialogTitle">QR code detected</h2>
+        </div>
+        <p class="dialog-meta"><span>Type: <span id="lastType"></span></span><span class="tag" id="lastKind"></span></p>
+        <div class="code" id="lastCode"></div>
+        <dl class="fields" id="fnsFields" hidden></dl>
+        <div class="dialog-actions">
+          <a class="btn btn-primary" id="btnOpenLink" target="_blank" rel="noopener" hidden>Open link <svg class="icon icon-sm" aria-hidden="true"><use href="#i-external" xlink:href="#i-external"></use></svg></a>
+          <button class="btn btn-primary" id="btnScanAgain" type="button">Scan again</button>
+          <button class="btn btn-secondary" id="btnClose" type="button">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="zoom" role="group" aria-label="Zoom">
+      <div class="zoom-group">
+        <button class="zoom-btn" id="btnZoom1" type="button" data-zoom="1" aria-pressed="false">1x</button>
+        <button class="zoom-btn is-active" id="btnZoom2" type="button" data-zoom="2" aria-pressed="true">2x</button>
+        <button class="zoom-btn" id="btnZoom4" type="button" data-zoom="4" aria-pressed="false">4x</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctl" id="btnTorch" type="button" aria-label="Torch" disabled>
+        <span class="ctl-circle"><svg class="icon" id="torchIcon" aria-hidden="true"><use href="#i-torch" xlink:href="#i-torch"></use></svg></span>
+        <span class="ctl-label" id="torchLabel">Off</span>
+      </button>
+      <button class="ctl" id="btnCamera" type="button" aria-label="Switch camera" disabled>
+        <span class="ctl-circle"><svg class="icon" aria-hidden="true"><use href="#i-camera" xlink:href="#i-camera"></use></svg></span>
+        <span class="ctl-label">Switch</span>
+      </button>
+      <button class="ctl" id="btnPause" type="button" aria-label="Pause scanning" disabled>
+        <span class="ctl-circle"><svg class="icon" id="pauseIcon" aria-hidden="true"><use href="#i-pause" xlink:href="#i-pause"></use></svg></span>
+        <span class="ctl-label" id="pauseLabel">Pause</span>
+      </button>
+    </div>
+
+    <p class="counter" title="Page frame rate while scanning (requestAnimationFrame) and scans in history">
+      <span id="fps">0</span> fps &middot; <span id="historyCount">0</span>/20
+    </p>
+  </section>
+
+  <section class="history-panel" aria-labelledby="historyTitle">
+    <div class="panel-head">
+      <h2 class="h2" id="historyTitle">Recent scans</h2>
+      <button class="link-btn" id="btnClear" type="button" disabled>Clear</button>
+    </div>
+    <p class="empty" id="historyEmpty">No scans yet. Point the camera at a QR code or a barcode.</p>
+    <ul class="history" id="history"></ul>
+  </section>
+
+  <footer class="page-footer">
+    <p><a id="repoLink" href="https://github.com/mad8fat/webview-qr-scanner" target="_blank" rel="noopener">webview-qr-scanner on GitHub</a></p>
+    <p>MIT &middot; ZBar LGPL 2.1 &middot; <a href="../wasm/NOTICE">NOTICE</a></p>
+    <p class="caption">Scanner state: <span id="stateRaw">idle</span></p>
+  </footer>
+
+  <noscript><p class="noscript">This demo needs JavaScript.</p></noscript>
+</main>
+
+<div class="https" id="httpsWarning" role="alertdialog" aria-labelledby="httpsTitle" aria-describedby="httpsText" hidden>
+  <div class="https-card">
+    <svg class="icon icon-xl" aria-hidden="true"><use href="#i-lock" xlink:href="#i-lock"></use></svg>
+    <h2 class="h1" id="httpsTitle">HTTPS required</h2>
+    <p class="panel-text" id="httpsText">Camera access works only on HTTPS (or localhost).</p>
+    <p class="panel-text">Open this page via HTTPS or use a local server.</p>
+    <div class="https-actions">
+      <button class="btn btn-primary" id="btnCopyRepo" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-copy" xlink:href="#i-copy"></use></svg> <span id="copyLabel">Copy repository link</span></button>
+      <button class="btn btn-secondary" id="btnHttpsClose" type="button">Close</button>
+    </div>
+    <p class="panel-detail" id="copyResult" hidden></p>
+  </div>
+</div>
+
+<script src="../wasm/zbar.js?v=0.1.0"></script>
+<script src="../src/cam-scanner.js?v=0.1.0"></script>
+<script src="../src/parsers/fns-receipt.js?v=0.1.0"></script>
+<script src="demo.js?v=0.1.0"></script>
+</body>
+</html>

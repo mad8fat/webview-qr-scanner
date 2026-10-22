@@ -1,0 +1,84 @@
+Third-party components in wasm/
+===============================
+
+The files zbar.wasm and zbar.js in this directory are third-party binaries
+and glue code. They are distributed WITHOUT MODIFICATION. Byte-for-byte
+integrity is enforced by `node scripts/check-wasm.js` (sha256 and size).
+
+Source
+------
+Project:    koder
+Repository: https://github.com/maslick/koder
+Commit:     6f8bebd2ad454ed5320b6519cb932cc52a4af9fa
+            (the master branch has not changed since 2023-11-09)
+Directory:  public/wasm
+License:    MIT (koder), full text below
+
+ZBar
+----
+zbar.wasm is a WebAssembly build of ZBar bar code reader, version 0.23.90.
+Repository: https://github.com/mchehab/zbar
+License:    LGPL-2.1-or-later
+License text: LICENSE.LGPL-2.1.txt in this directory (GNU Lesser General
+            Public License, version 2.1, full text)
+            (also https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt and
+            https://github.com/mchehab/zbar/blob/master/LICENSE.md)
+
+Because ZBar is licensed under the LGPL, you may replace it with your own
+build of ZBar (see "How to reproduce" below) and the scanner will keep
+working. zbar.wasm and zbar.js must be replaced TOGETHER: zbar.js is the
+Emscripten glue generated for that exact zbar.wasm build and does not work
+with a binary from another build.
+
+koder.js
+--------
+koder's JavaScript wrapper (public/wasm/koder.js, MIT) is NOT shipped here.
+The wrapper logic (CreateKoder + cwrap of createBuffer, deleteBuffer,
+triggerDecode, getScanResults, getResultType) is derived from koder.js at the
+commit above and rewritten in ES5 into src/cam-scanner.js (ZbarKoder), so the
+library keeps its browser floor; the original uses a top-level class and the
+ES2021 ||= operator. zbar.js and zbar.wasm remain unmodified.
+
+Checksums (sha256)
+------------------
+6d3ffd5045d20bc06c09247cf551d6d307ea4e0962673a46d67703b04e3cd185  zbar.wasm
+e37850d4443fec003a6de3a38657802e36224d91abed4a082004df18474761cf  zbar.js
+
+Sizes (bytes): zbar.wasm 338031, zbar.js 14782.
+
+How to reproduce
+----------------
+Follow the Docker-based build instructions in the README of
+https://github.com/maslick/koder (it builds ZBar with Emscripten and emits
+zbar.wasm and zbar.js into public/wasm). Compiler versions may differ, so a
+rebuild is not guaranteed to be byte-identical to the files shipped here.
+Copy both emitted files (zbar.wasm and zbar.js) into this directory.
+
+Statement
+---------
+The files zbar.wasm and zbar.js are redistributed as-is, exactly as obtained
+from the source above, without any changes.
+
+koder license (MIT)
+-------------------
+MIT License
+
+Copyright (c) 2022 Pavel Maslov
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

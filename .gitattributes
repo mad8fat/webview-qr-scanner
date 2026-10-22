@@ -1,0 +1,4 @@
+* text=auto
+*.wasm binary
+wasm/*.js -text
+wasm/NOTICE -text
